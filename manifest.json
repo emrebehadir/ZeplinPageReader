@@ -1,0 +1,30 @@
+{
+    "manifest_version": 2,
+    "name": "Zeplin Page Reader",
+    "description": "It read all zeplin page and related notes.",
+    "version": "1.0",
+    "content_scripts": [
+        {
+            "matches": [
+                "https://app.zeplin.io/project/*"
+            ],
+            "js": [
+                "content.js"
+            ]
+        }
+    ],
+    "browser_action": {
+        "default_icon": "extension-icon.png",
+        "default_popup": "popup.html"
+    },
+    "icons": {
+        "128": "extension-icon.png"
+    },
+    "permissions": [
+        "activeTab",
+        "storage",
+        "cookies",
+        "clipboardRead",
+        "clipboardWrite"
+    ]
+}
