@@ -34,7 +34,6 @@
     "icons": {
         "128": "extension-icon.png"
     },
-    "web_accessible_resources": ["loading.gif"],
     "permissions": [
         "<all_urls>",
         "activeTab",
