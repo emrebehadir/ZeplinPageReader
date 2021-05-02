@@ -6,13 +6,27 @@
     "content_scripts": [
         {
             "matches": [
-                "https://app.zeplin.io/project/*"
+                "<all_urls>"
             ],
             "js": [
+                "credentials.js",
+                "jquery.min.js",
+                "common.js",
                 "content.js"
-            ]
+            ],
+            "all_frames": true,
+            "run_at": "document_end"
         }
     ],
+    "background": {
+        "scripts": [
+            "credentials.js",
+            "jquery.min.js",
+            "common.js",
+            "background.js"
+        ],
+        "persistent": true
+    },
     "browser_action": {
         "default_icon": "extension-icon.png",
         "default_popup": "popup.html"
@@ -20,11 +34,14 @@
     "icons": {
         "128": "extension-icon.png"
     },
+    "web_accessible_resources": ["loading.gif"],
     "permissions": [
+        "<all_urls>",
         "activeTab",
-        "storage",
         "cookies",
         "clipboardRead",
-        "clipboardWrite"
+        "clipboardWrite",
+        "webRequest",
+        "webRequestBlocking"
     ]
 }

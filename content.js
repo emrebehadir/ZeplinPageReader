@@ -1,123 +1,80 @@
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    var token = ""
-    document.cookie.split(";").forEach(element => { if (element.includes("Token")) { token = element.split("=")[1] } })
+    console.log(document.URL)
     switch (request.message) {
         case "btn_read_note":
-            getNotesFromPage(token)
+            chrome.runtime.sendMessage({ message: 'btn_read_note_b', url: document.URL });
             break;
         case "btn_read_content":
-            getPageTextContent(token)
+            chrome.runtime.sendMessage({ message: 'btn_read_content_b', url: document.URL });
             break;
-
+        case "check_token":
+            sendResponse(token === "")
+            break;
+        case "btn_copy_token":
+            document.cookie.split(";").forEach(element => { if (element.includes("Token")) { copyTextToClipboard(element.split("=")[1],"Token ") } })
+            break;
     }
 })
 
-function getPageTextContent(token) {
-    const { projectID, pageID } = getPageRelatedIDs();
+$(document).ready(function () {
+    initThumbinal();
 
-    const options = {
-        headers: {
-            'content-Type': 'application/json',
-            'zeplin-token': token,
-            'connection': 'keep-alive',
-            'Accept': '*/*',
-        },
-    };
-
-    fetch("https://api.zeplin.io/v2/projects/" + projectID + "/screens/" + pageID + "/versions", options)
-        .then(response => response.json())
-        .then(result => {
-            fetch(result.versions[0].fullSnapshotUrl)
-                .then(response => response.json())
-                .then(result => {
-                    contentText = ""
-                    result.layers.forEach(layer => {
-                        contentText += readLayer(layer)
-                    })
-                    if (contentText != "") {
-                        copyTextToClipboard(contentText)
-                    }
-                })
-        })
-}
-
-function readLayer(layer) {
-    var contentText = ""
-
-    if (layer.type == "text" && layer.name.trim() != "") {
-        contentText += layer.name + "</string>\n"
-    }
-
-    layer.layers?.forEach(layer => {
-        contentText += readLayer(layer)
+    $("a").each(function () {
+        if (isShortenedZeplinUrl(this.href)) {
+            chrome.runtime.sendMessage({ message: 'prepare_thumbinal_link', resolveUrl: this.href });
+        }
     })
 
-    return contentText
+    $('div').on('mouseenter', 'a.external-link', mouseEnterHandler);
+    $('div').on('mouseleave', 'a.external-link', mouseLeaveHandler);
+});
+
+var hideTimeout;
+var showTimeout;
+var delay = 250;
+
+function initThumbinal() {
+    $('body').append('<div id="zeplin-thumbinal">a</div>');
+    $('#zeplin-thumbinal').css({
+        "position": "absolute",
+        "border": "5px solid #ff5200",
+        "transform": "translateX(50%) translate(-50%, -50%) scale(0.45)",
+        "z-index": "1", "font-size": "40px",
+        "background": "black",
+        "min-width": "1px",
+        "min-height": "10px",
+        "color": "white"
+    });
+    $('#zeplin-thumbinal').hide();
 }
 
-function getNotesFromPage(token) {
-    const { projectID, pageID } = getPageRelatedIDs();
-
-    const options = {
-        headers: {
-            'content-Type': 'application/json',
-            'zeplin-token': token,
-            'connection': 'keep-alive',
-            'Accept': '*/*',
-        },
-    };
-
-    fetch("https://api.zeplin.io/v2/projects/" + projectID + "/screens/" + pageID + "/dots", options).then(response => response.json())
-        .then(result => {
-            var androidStrings = ""
-            result.dots.forEach(item => {
-                if (item.status == "open") {
-                    item.comments[0].note.split("\n").forEach(item => {
-                        const stringConstants = item.trim().split(",")[0]
-                        androidStrings += "<string name=\"" + stringConstants + "\"> </string>\n"
-                    })
+function mouseEnterHandler(e) {
+    var url = $(e.target).attr('href');
+    if (isShortenedZeplinUrl(url)) {
+        showTimeout = setTimeout(function () {
+            showTimeout = null;
+            chrome.runtime.sendMessage({ message: "get_thumbinal_link", resolveUrl: url }, function (response) {
+                var element = $('#zeplin-thumbinal').detach();
+                $(e.target).append(element);
+                if (response.includes("http")) {
+                    $('#zeplin-thumbinal').html('<img id="thumbinal_img" src="' + response + '" />')
+                } else {
+                    $('#zeplin-thumbinal').html(response);
                 }
-            })
-
-            if (androidStrings != "") {
-                copyTextToClipboard(androidStrings)
-            }
-        })
-}
-
-function getPageRelatedIDs() {
-    var urlArray = document.URL.split("/")
-
-    return {
-        projectID: urlArray[4],
-        pageID: urlArray[6]
+                $('#zeplin-thumbinal').show();
+            });
+        }, delay);
     }
 }
 
-//https://stackoverflow.com/a/18455088/11956146
-function copyTextToClipboard(text) {
-    //Create a textbox field where we can insert text to. 
-    var copyFrom = document.createElement("textarea");
-
-    //Set the text content to be the text you wished to copy.
-    copyFrom.textContent = text;
-
-    //Append the textbox field into the body as a child. 
-    //"execCommand()" only works when there exists selected text, and the text is inside 
-    //document.body (meaning the text is part of a valid rendered HTML element).
-    document.body.appendChild(copyFrom);
-
-    //Select all the text!
-    copyFrom.select();
-
-    //Execute command
-    document.execCommand('copy');
-
-    //(Optional) De-select the text using blur(). 
-    copyFrom.blur();
-
-    //Remove the textbox field from the document.body, so no other JavaScript nor 
-    //other elements can get access to this.
-    document.body.removeChild(copyFrom);
-    alert("Copied!")
+function mouseLeaveHandler() {
+    if (showTimeout !== null) {
+        clearTimeout(showTimeout);
+        showTimeout = null;
+    } else {
+        hideTimeout = setTimeout(function () {
+            hideTimeout = null;
+            $('#zeplin-thumbinal').hide();
+        }, delay);
+    }
 }
