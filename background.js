@@ -56,7 +56,7 @@ function getPageTumbinal(url, shortenedUrl) {
     fetch("https://api.zeplin.io/v2/projects/" + projectID + "/screens/" + pageID + "/versions", options)
         .then(response => response.json())
         .then(result => {
-            if (result.versions[0].snapshot.url == undefined) {
+            if (result.versions == undefined) {
                 thumbinalMap.set(shortenedUrl, result.title + " " + result.message)
             } else {
                 thumbinalMap.set(shortenedUrl, result.versions[0].snapshot.url)
