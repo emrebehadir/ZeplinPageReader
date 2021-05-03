@@ -11,7 +11,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             sendResponse(token === "")
             break;
         case "btn_copy_token":
-            document.cookie.split(";").forEach(element => { if (element.includes("Token")) { copyTextToClipboard(element.split("=")[1],"Token ") } })
+            document.cookie.split(";").forEach(element => { if (element.includes("Token")) { copyTextToClipboard(element.split("=")[1], "Token ") } })
             break;
     }
 })
@@ -25,8 +25,8 @@ $(document).ready(function () {
         }
     })
 
-    $('div').on('mouseenter', 'a.external-link', mouseEnterHandler);
-    $('div').on('mouseleave', 'a.external-link', mouseLeaveHandler);
+    $('a').on('mouseenter', mouseEnterHandler);
+    $('a').on('mouseleave', mouseLeaveHandler);
 });
 
 var hideTimeout;
@@ -53,16 +53,21 @@ function mouseEnterHandler(e) {
     if (isShortenedZeplinUrl(url)) {
         showTimeout = setTimeout(function () {
             showTimeout = null;
-            chrome.runtime.sendMessage({ message: "get_thumbinal_link", resolveUrl: url }, function (response) {
-                var element = $('#zeplin-thumbinal').detach();
-                $(e.target).append(element);
-                if (response.includes("http")) {
-                    $('#zeplin-thumbinal').html('<img id="thumbinal_img" src="' + response + '" />')
-                } else {
-                    $('#zeplin-thumbinal').html(response);
-                }
-                $('#zeplin-thumbinal').show();
-            });
+            try {
+                chrome.runtime.sendMessage({ message: "get_thumbinal_link", resolveUrl: url }, function (response) {
+                    var element = $('#zeplin-thumbinal').detach();
+                    $(e.target).append(element);
+                    if (response.includes("http")) {
+                        $('#zeplin-thumbinal').html('<img id="thumbinal_img" src="' + response + '" />')
+                    } else {
+                        $('#zeplin-thumbinal').html(response);
+                    }
+                    $('#zeplin-thumbinal').show();
+                });
+            }
+            catch (err) {
+                alert("Please refresh tab")
+            }
         }, delay);
     }
 }

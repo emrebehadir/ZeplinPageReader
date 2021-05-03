@@ -11,9 +11,11 @@ var isTokenAlertActive = false
 
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
-        if (token === "" && !isTokenAlertActive) {
-            isTokenAlertActive = true
-            alert("Opps token not defined!! Please read readme.md directive")
+        if (token === "") {
+            if (!isTokenAlertActive) {
+                isTokenAlertActive = true
+                alert("Opps token not defined!! Please read readme.md directive")
+            }
             return
         }
         switch (request.message) {
@@ -37,7 +39,10 @@ chrome.runtime.onMessage.addListener(
     });
 
 function getThumbinalLink(url, sendResponse) {
-    sendResponse(thumbinalMap.get(url))
+    var url = thumbinalMap.get(url)
+    if (url != undefined) {
+        sendResponse(url)
+    }
 }
 
 function getThumbinalUrl(url) {
@@ -93,7 +98,6 @@ function readLayer(layer) {
 
     return contentText
 }
-
 
 function getNotesFromPage(url) {
     const { projectID, pageID } = getPageRelatedIDs(url);
