@@ -19,6 +19,9 @@ chrome.runtime.onMessage.addListener(
             return
         }
         switch (request.message) {
+            case "check_url_unshorten":
+                checkUrlUnshorten(request.url, sendResponse)
+                break;
             case "prepare_thumbinal_link":
                 if (thumbinalMap.get(request.resolveUrl) == undefined) {
                     thumbinalMap.set(request.resolveUrl, "")
@@ -38,9 +41,19 @@ chrome.runtime.onMessage.addListener(
         return true;
     });
 
+function checkUrlUnshorten(url, sendResponse) {
+    var url = thumbinalMap.get(url)
+    if (url == undefined) {
+        sendResponse()
+    }
+}
+
 function getThumbinalLink(url, sendResponse) {
     var url = thumbinalMap.get(url)
     if (url != undefined) {
+        if(url === ""){
+            url = "Url not prepared yet. Please try after a couple of second"
+        }
         sendResponse(url)
     }
 }
