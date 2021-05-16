@@ -12,34 +12,46 @@ var isTokenAlertActive = false
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
         if (token === "") {
-            if (!isTokenAlertActive) {
-                isTokenAlertActive = true
-                alert("Opps token not defined!! Please read readme.md directive")
-            }
-            return
-        }
-        switch (request.message) {
-            case "check_url_unshorten":
-                checkUrlUnshorten(request.url, sendResponse)
-                break;
-            case "prepare_thumbinal_link":
-                if (thumbinalMap.get(request.resolveUrl) == undefined) {
-                    thumbinalMap.set(request.resolveUrl, "")
-                    getThumbinalUrl(request.resolveUrl)
+            chrome.cookies.get({ url: "https://app.zeplin.io/", name: 'userToken' }, function (cookie) {
+                token = cookie.value;
+                options.headers["zeplin-token"] = cookie.value;
+                if (token === "") {
+                    if (!isTokenAlertActive) {
+                        isTokenAlertActive = true
+                        alert("Opps token not found!!")
+                    }
+                    return
                 }
-                break;
-            case "get_thumbinal_link":
-                getThumbinalLink(request.resolveUrl, sendResponse)
-                break;
-            case "btn_read_note_b":
-                getNotesFromPage(request.url)
-                break;
-            case "btn_read_content_b":
-                getPageTextContent(request.url)
-                break;
+                applyMessage(request, sendResponse);
+            });
+        } else {
+            applyMessage(request, sendResponse)
         }
         return true;
     });
+
+function applyMessage(request, sendResponse) {
+    switch (request.message) {
+        case "check_url_unshorten":
+            checkUrlUnshorten(request.url, sendResponse)
+            break;
+        case "prepare_thumbinal_link":
+            if (thumbinalMap.get(request.resolveUrl) == undefined) {
+                thumbinalMap.set(request.resolveUrl, "")
+                getThumbinalUrl(request.resolveUrl)
+            }
+            break;
+        case "get_thumbinal_link":
+            getThumbinalLink(request.resolveUrl, sendResponse)
+            break;
+        case "btn_read_note_b":
+            getNotesFromPage(request.url)
+            break;
+        case "btn_read_content_b":
+            getPageTextContent(request.url)
+            break;
+    }
+}
 
 function checkUrlUnshorten(url, sendResponse) {
     var url = thumbinalMap.get(url)
@@ -51,7 +63,7 @@ function checkUrlUnshorten(url, sendResponse) {
 function getThumbinalLink(url, sendResponse) {
     var url = thumbinalMap.get(url)
     if (url != undefined) {
-        if(url === ""){
+        if (url === "") {
             url = "Url not prepared yet. Please try after a couple of second"
         }
         sendResponse(url)

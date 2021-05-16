@@ -1,5 +1,4 @@
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    console.log(document.URL)
     switch (request.message) {
         case "btn_read_note":
             chrome.runtime.sendMessage({ message: 'btn_read_note_b', url: document.URL });
@@ -64,8 +63,8 @@ window.onmousemove = function (e) {
     var x = e.clientX,
         y = e.clientY;
 
-    $('#zeplin-thumbinal').css("top", y)
-    $('#zeplin-thumbinal').css("left", x)
+    $('#zeplin-thumbinal').css("top", 30)
+    $('#zeplin-thumbinal').css("left", x + 50)
 };
 
 var hideTimeout;
@@ -76,14 +75,12 @@ function initThumbinal() {
     $('body').append('<div id="zeplin-thumbinal">a</div>');
     $('#zeplin-thumbinal').css({
         "position": "absolute",
-        "border": "5px solid #ff5200",
-        "transform": "translateX(50%) translate(-50%, -50%) scale(0.45)",
+        "border": "3px solid #ff5200",
         "z-index": "20",
         "font-size": "40px",
-        "background": "black",
+        "background": "white",
         "min-width": "1px",
         "min-height": "10px",
-        "color": "white"
     });
     $('#zeplin-thumbinal').hide();
 }
@@ -96,8 +93,7 @@ function mouseEnterHandler(e) {
             try {
                 chrome.runtime.sendMessage({ message: "get_thumbinal_link", resolveUrl: url }, function (response) {
                     if (response.includes("http")) {
-                        $('#zeplin-thumbinal').css("transform", "translateX(50%) translate(-50%, -50%) scale(0.45)")
-                        $('#zeplin-thumbinal').html('<img id="thumbinal_img" src="' + response + '" />')
+                        $('#zeplin-thumbinal').html('<img id="thumbinal_img" style="height: 90vh; width:auto;" src="' + response + '" />')
                     } else {
                         $('#zeplin-thumbinal').css("transform", "none")
                         $('#zeplin-thumbinal').html(response);

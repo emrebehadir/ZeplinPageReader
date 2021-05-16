@@ -1,5 +1,5 @@
 function isShortenedZeplinUrl(url) {
-    if (url == undefined) {
+    if (url == undefined || url == null) {
         return false
     }
     var arr = url.split("/");
