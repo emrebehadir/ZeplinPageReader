@@ -4,11 +4,17 @@ Zeplin page reader is a simple chrome extension. It copy page content and notes 
 
 ![](ZeplinPageReader.gif)
 
+## Feature
+
+- Show shortned url as thumbinal while hovering
+- Read notes as Android string
+- Read all page content text as string
+
+## Prequest
+
+- Login zeplin with chrome browser
+
 ## Installation
 
 - Chrome manage extensions -> Load Unpacked -> Select extension directory
-- Open new zeplin tab
-- Click copy token from extension ui
-- Put token to credential.js ( var token =  "<__token__>";) and save file
-- Refresh extension from Manage Extensions
 - Refresh extension and opened zeplin/jira page 

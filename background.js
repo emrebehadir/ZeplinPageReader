@@ -114,7 +114,7 @@ function readLayer(layer) {
     var contentText = ""
 
     if (layer.type == "text" && layer.name.trim() != "") {
-        contentText += layer.name + "</string>\n"
+        contentText += layer.name + "\n"
     }
 
     layer.layers?.forEach(layer => {
