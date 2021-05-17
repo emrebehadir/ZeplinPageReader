@@ -73,7 +73,9 @@ function getThumbinalLink(url, sendResponse) {
 function getThumbinalUrl(url) {
     fetch(url).then(response => {
         getPageTumbinal(response.url, url)
-    })
+    }).catch(function (error) {
+        console.log(error);
+    });
 }
 
 function getPageTumbinal(url, shortenedUrl) {
@@ -87,7 +89,7 @@ function getPageTumbinal(url, shortenedUrl) {
                 thumbinalMap.set(shortenedUrl, result.versions[0].snapshot.url)
             }
         }).catch(function (error) {
-            console.log("error");
+            console.log(error);
         });
 }
 
@@ -106,8 +108,12 @@ function getPageTextContent(url) {
                     if (contentText != "") {
                         copyTextToClipboard(contentText, "Page text ")
                     }
-                })
-        })
+                }).catch(function (error) {
+                    console.log(error);
+                });
+        }).catch(function (error) {
+            console.log(error);
+        });
 }
 
 function readLayer(layer) {
@@ -144,5 +150,7 @@ function getNotesFromPage(url) {
             if (androidStrings != "") {
                 copyTextToClipboard(androidStrings, "Notes ")
             }
-        })
+        }).catch(function (error) {
+            console.log(error);
+        });
 }

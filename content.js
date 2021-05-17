@@ -18,11 +18,16 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 // unshorten
 function processElement(e) {
     if (e && e.tagName && e.tagName.toLowerCase() == "a" && isShortenedZeplinUrl(e.href)) {
-        chrome.runtime.sendMessage({ message: 'check_url_unshorten', resolveUrl: e.href }, function () {
-            chrome.runtime.sendMessage({ message: 'prepare_thumbinal_link', resolveUrl: e.href, token: token });
-            e.addEventListener("mouseenter", mouseEnterHandler);
-            e.addEventListener('mouseleave', mouseLeaveHandler);
-        });
+        try {
+            chrome.runtime.sendMessage({ message: 'check_url_unshorten', resolveUrl: e.href }, function () {
+                chrome.runtime.sendMessage({ message: 'prepare_thumbinal_link', resolveUrl: e.href, token: token });
+                e.addEventListener("mouseenter", mouseEnterHandler);
+                e.addEventListener('mouseleave', mouseLeaveHandler);
+            });
+        }
+        catch (err) {
+            console.log(err)
+        }
     }
 }
 
