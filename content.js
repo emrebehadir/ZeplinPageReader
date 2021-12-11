@@ -107,7 +107,7 @@ function mouseEnterHandler(e) {
                 });
             }
             catch (err) {
-                alert("Please refresh tab")
+                alert("Zeplin Extension : Please refresh tab ")
             }
         }, delay);
     }

@@ -8,11 +8,20 @@ const options = {
     },
 };
 var isTokenAlertActive = false
+var isTokenExpiredAlertActive = false
+var isCookieAlerActive = false
 
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
         if (token === "") {
             chrome.cookies.get({ url: "https://app.zeplin.io/", name: 'userToken' }, function (cookie) {
+                if (cookie == null) {
+                    if (!isCookieAlerActive) {
+                        isCookieAlerActive = true
+                        alert("Seems your zeplin session expired please login again and refresh the page to see thumbinal of designs !!")
+                    }
+                    return
+                }
                 token = cookie.value;
                 options.headers["zeplin-token"] = cookie.value;
                 if (token === "") {
@@ -21,6 +30,15 @@ chrome.runtime.onMessage.addListener(
                         alert("Opps token not found!!")
                     }
                     return
+                } else {
+                    if (!isTokenValid()) {
+                        token = ""
+                        if (!isTokenExpiredAlertActive) {
+                            isTokenExpiredAlertActive = true
+                            alert("Opps your zeplin session expired please login again and refresh the page to see thumbinal of designs !!")
+                        }
+                        return
+                    }
                 }
                 applyMessage(request, sendResponse);
             });
@@ -29,6 +47,23 @@ chrome.runtime.onMessage.addListener(
         }
         return true;
     });
+
+function isTokenValid() {
+    var parsedToken = parseJwt(token)
+    var curDate = new Date().getTime()
+    return ((parsedToken.exp * 1000) >= curDate)
+}
+
+//https://stackoverflow.com/a/38552302
+function parseJwt(token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+};
 
 function applyMessage(request, sendResponse) {
     switch (request.message) {
