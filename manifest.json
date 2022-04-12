@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Zeplin Page Reader",
     "description": "It help to read all zeplin page and related notes without page interaction. Also it show shortened url like screen thumbinal while hovering url link.",
-    "version": "1.1",
+    "version": "1.2",
     "content_scripts": [
         {
             "matches": [

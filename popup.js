@@ -1,13 +1,25 @@
 document.getElementById("btn_read_note").addEventListener("click", function (e) {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.tabs.query({
+        active: true,
+        currentWindow: true
+    }, function (tabs) {
         var activeTab = tabs[0];
-        chrome.tabs.sendMessage(activeTab.id, { "message": "btn_read_note" });
+        chrome.runtime.sendMessage({
+            "message": "btn_read_note",
+            url: activeTab.url
+        });
     });
 })
 
 document.getElementById("btn_read_content").addEventListener("click", function (e) {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.tabs.query({
+        active: true,
+        currentWindow: true
+    }, function (tabs) {
         var activeTab = tabs[0];
-        chrome.tabs.sendMessage(activeTab.id, { "message": "btn_read_content" });
+        chrome.runtime.sendMessage({
+            "message": "btn_read_content",
+            url: activeTab.url
+        });
     });
 })

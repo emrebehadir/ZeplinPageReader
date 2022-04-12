@@ -1,20 +1,3 @@
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    switch (request.message) {
-        case "btn_read_note":
-            chrome.runtime.sendMessage({ message: 'btn_read_note_b', url: document.URL });
-            break;
-        case "btn_read_content":
-            chrome.runtime.sendMessage({ message: 'btn_read_content_b', url: document.URL });
-            break;
-        case "check_token":
-            sendResponse(token === "")
-            break;
-        case "btn_copy_token":
-            document.cookie.split(";").forEach(element => { if (element.includes("Token")) { copyTextToClipboard(element.split("=")[1], "Token ") } })
-            break;
-    }
-})
-
 // unshorten
 function processElement(e) {
     if (e && e.tagName && e.tagName.toLowerCase() == "a" && isShortenedZeplinUrl(e.href)) {

@@ -7,51 +7,52 @@ const options = {
         'Accept': '*/*',
     },
 };
-var isTokenAlertActive = false
-var isTokenExpiredAlertActive = false
-var isCookieAlerActive = false
+
+var cookieAlertTimeStamp = 0
 
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
-        if (token === "") {
-            chrome.cookies.get({ url: "https://app.zeplin.io/", name: 'userToken' }, function (cookie) {
-                if (cookie == null) {
-                    if (!isCookieAlerActive) {
-                        isCookieAlerActive = true
-                        alert("Seems your zeplin session expired please login again and refresh the page to see thumbinal of designs !!")
-                    }
-                    return
-                }
-                token = cookie.value;
-                options.headers["zeplin-token"] = cookie.value;
-                if (token === "") {
-                    if (!isTokenAlertActive) {
-                        isTokenAlertActive = true
-                        alert("Opps token not found!!")
-                    }
-                    return
-                } else {
-                    if (!isTokenValid()) {
-                        token = ""
-                        if (!isTokenExpiredAlertActive) {
-                            isTokenExpiredAlertActive = true
-                            alert("Opps your zeplin session expired please login again and refresh the page to see thumbinal of designs !!")
-                        }
-                        return
-                    }
-                }
-                applyMessage(request, sendResponse);
-            });
+        if (!isTokenValid()) {
+            thumbinalMap.clear()
+            getToken(_ => {
+                applyMessage(request, sendResponse)
+            })
         } else {
             applyMessage(request, sendResponse)
         }
-        return true;
     });
 
 function isTokenValid() {
+    if (token === "" || token == null) {
+        return false
+    }
+
     var parsedToken = parseJwt(token)
+    if (parsedToken.exp == undefined) {
+        return true
+    }
+
     var curDate = new Date().getTime()
     return ((parsedToken.exp * 1000) >= curDate)
+}
+
+function getToken(applyRequest) {
+    chrome.cookies.get({
+        url: "https://app.zeplin.io/",
+        name: 'userToken'
+    }, function (cookie) {
+        if (cookie == null || cookie === "") {
+            // Alert not showed before or last 4 hour
+            if (cookieAlertTimeStamp == 0 || (Date.now() - cookieAlertTimeStamp > 4 * 3600000)) {
+                cookieAlertTimeStamp = Date.now()
+                alert("Seems your zeplin session expired please login again and refresh the page to see thumbinal of designs !!")
+            }
+            return
+        }
+        token = cookie.value;
+        options.headers["zeplin-token"] = cookie.value;
+        applyRequest()
+    });
 }
 
 //https://stackoverflow.com/a/38552302
@@ -79,10 +80,10 @@ function applyMessage(request, sendResponse) {
         case "get_thumbinal_link":
             getThumbinalLink(request.resolveUrl, sendResponse)
             break;
-        case "btn_read_note_b":
+        case "btn_read_note":
             getNotesFromPage(request.url)
             break;
-        case "btn_read_content_b":
+        case "btn_read_content":
             getPageTextContent(request.url)
             break;
     }
@@ -114,7 +115,10 @@ function getThumbinalUrl(url) {
 }
 
 function getPageTumbinal(url, shortenedUrl) {
-    const { projectID, pageID } = getPageRelatedIDs(url);
+    const {
+        projectID,
+        pageID
+    } = getPageRelatedIDs(url);
     fetch("https://api.zeplin.io/v2/projects/" + projectID + "/screens/" + pageID + "/versions", options)
         .then(response => response.json())
         .then(result => {
@@ -129,7 +133,10 @@ function getPageTumbinal(url, shortenedUrl) {
 }
 
 function getPageTextContent(url) {
-    const { projectID, pageID } = getPageRelatedIDs(url);
+    const {
+        projectID,
+        pageID
+    } = getPageRelatedIDs(url);
     fetch("https://api.zeplin.io/v2/projects/" + projectID + "/screens/" + pageID + "/versions", options)
         .then(response => response.json())
         .then(result => {
@@ -166,7 +173,10 @@ function readLayer(layer) {
 }
 
 function getNotesFromPage(url) {
-    const { projectID, pageID } = getPageRelatedIDs(url);
+    const {
+        projectID,
+        pageID
+    } = getPageRelatedIDs(url);
     if (pageID == undefined) {
         return
     }
